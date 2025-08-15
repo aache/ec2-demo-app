@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+
+# IntelliJ IDEA / JetBrains
+.idea/
+shelf/
+workspace.xml
+
+# Gradle
+.gradle/
+build/
+gradle/

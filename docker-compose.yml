@@ -3,6 +3,7 @@ version: "3.9"
 services:
   app:
     image: "${ECR_URI:-ec2-demo-app}:latest"
+    platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfile

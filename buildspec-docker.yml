@@ -16,10 +16,14 @@ phases:
   build:
     commands:
       - echo Build JAR & Docker image
-      # If your EC2 is x86, make sure you push an amd64 image from Mac builders; on CodeBuild x86 you can keep plain build
-      # - docker buildx create --use --name multi || docker buildx use multi
-      # - docker buildx build --platform linux/amd64 -t ${IMAGE_REPO_NAME}:${IMAGE_TAG} .
-      - docker build -t ${IMAGE_REPO_NAME}:${IMAGE_TAG} .
+      - |
+          if [ "$(uname -m)" = "arm64" ] || [ "$(uname -m)" = "aarch64" ]; then
+            echo "Detected ARM builder; using buildx for amd64 image"
+            docker buildx create --use --name multi || docker buildx use multi
+            docker buildx build --platform linux/amd64 -t ${IMAGE_REPO_NAME}:${IMAGE_TAG} --load .
+          else
+            docker build -t ${IMAGE_REPO_NAME}:${IMAGE_TAG} .
+          fi
       - docker tag ${IMAGE_REPO_NAME}:${IMAGE_TAG} ${ECR_URI}/${IMAGE_REPO_NAME}:${IMAGE_TAG}
       - docker tag ${IMAGE_REPO_NAME}:${IMAGE_TAG} ${ECR_URI}/${IMAGE_REPO_NAME}:latest
   post_build:

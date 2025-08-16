@@ -2,6 +2,7 @@ version: 0.2
 env:
   variables:
     IMAGE_REPO_NAME: ec2-demo-app
+    IMAGE_TAG_S3_BUCKET: ec2-demo-app-bucket-tags
 phases:
   pre_build:
     commands:
@@ -34,6 +35,8 @@ phases:
       # Write immutable tag for Deploy stage to consume (unchanged, but move to deploy/ is nicer)
       - mkdir -p deploy
       - echo ${IMAGE_TAG} > deploy/image_tag.txt
+      - echo Uploading image tag to S3...
+      - aws s3 cp deploy/image_tag.txt s3://${IMAGE_TAG_S3_BUCKET}/image_tag.txt
       # Also write the image digest so you can pin-by-digest if desired
       - DIGEST=$(aws ecr describe-images --repository-name ${IMAGE_REPO_NAME} --image-ids imageTag=${IMAGE_TAG} --region ${REGION} --query 'imageDetails[0].imageDigest' --output text)
       - echo ${DIGEST} > deploy/image_digest.txt

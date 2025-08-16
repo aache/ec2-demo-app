@@ -1,15 +1,7 @@
 version: "3.9"
-
 services:
   app:
-    image: "${ECR_URI:-ec2-demo-app}:latest"
-    platform: linux/amd64
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: "${ECR_URI}:${IMAGE_TAG}"
     ports:
       - "8080:8080"
-    env_file:
-      - .env
-    environment:
-      SPRING_PROFILES_ACTIVE: "${SPRING_PROFILES_ACTIVE:-local}"
+    restart: always

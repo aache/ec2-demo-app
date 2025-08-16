@@ -1,16 +1,21 @@
 version: 0.0
 os: linux
+
 files:
-  - source: docker-compose.yml
-    destination: /opt/ec2-demo
   - source: scripts
     destination: /opt/ec2-demo/scripts
+  - source: deploy
+    destination: /opt/ec2-demo/deploy
+  - source: docker-compose.yml
+    destination: /opt/ec2-demo
+
 permissions:
   - object: /opt/ec2-demo
     pattern: "**"
     owner: ec2-user
     group: ec2-user
     mode: 755
+
 hooks:
   BeforeInstall:
     - location: scripts/before_install.sh

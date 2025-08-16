@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
-set -euo pipefail
-cd /opt/ec2-demo
-# Try compose first; fall back to plain Docker
-if docker compose ls >/dev/null 2>&1; then
-  ECR_URI=${ECR_URI:-}
-  IMAGE_TAG=${IMAGE_TAG:-}
-  docker compose -f docker-compose.yml down || true
-else
-  docker rm -f ec2-demo-app || true
-fi
+set -eu
+
+# Stop and remove the old container if present
+docker stop ec2-demo-app 2>/dev/null || true
+docker rm   ec2-demo-app 2>/dev/null || true
+
+# Optional: prune dangling images to save disk
+docker image prune -f 2>/dev/null || true

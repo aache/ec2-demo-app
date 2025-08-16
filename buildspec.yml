@@ -19,7 +19,7 @@ phases:
   build:
     commands:
       - set -euo pipefail
-      - echo 'Build JAR & Docker image'
+      - echo 'Build JAR and Docker image'
       - |
         if [ "$(uname -m)" = "arm64" ] || [ "$(uname -m)" = "aarch64" ]; then
           echo "Detected ARM builder; using buildx for amd64 image"

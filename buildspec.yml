@@ -7,7 +7,6 @@ env:
 phases:
   pre_build:
     commands:
-      - set -euo pipefail
       - aws --version
       - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
       - REGION=${AWS_DEFAULT_REGION}
@@ -17,7 +16,6 @@ phases:
 
   build:
     commands:
-      - set -euo pipefail
       - |
         if [ "$(uname -m)" = "arm64" ] || [ "$(uname -m)" = "aarch64" ]; then
           docker buildx create --use --name multi || docker buildx use multi

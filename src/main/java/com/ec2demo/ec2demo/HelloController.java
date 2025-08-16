@@ -15,5 +15,4 @@ public class HelloController {
         public String welcome() {
         return "Welcome";
     }
-
 }

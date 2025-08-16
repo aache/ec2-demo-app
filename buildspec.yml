@@ -8,7 +8,6 @@ phases:
   pre_build:
     commands:
       - set -euo pipefail
-      - echo "=== USING REPO BUILDSPEC at $(date) ==="
       - aws --version
       - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
       - REGION=${AWS_DEFAULT_REGION}
@@ -19,10 +18,8 @@ phases:
   build:
     commands:
       - set -euo pipefail
-      - echo 'Build JAR and Docker image'
       - |
         if [ "$(uname -m)" = "arm64" ] || [ "$(uname -m)" = "aarch64" ]; then
-          echo "Detected ARM builder; using buildx for amd64 image"
           docker buildx create --use --name multi || docker buildx use multi
           docker buildx build --platform linux/amd64 -t "${IMAGE_REPO_NAME}:${IMAGE_TAG}" --load .
         else
@@ -31,24 +28,14 @@ phases:
       - docker tag "${IMAGE_REPO_NAME}:${IMAGE_TAG}" "${ECR_URI}/${IMAGE_REPO_NAME}:${IMAGE_TAG}"
       - docker tag "${IMAGE_REPO_NAME}:${IMAGE_TAG}" "${ECR_URI}/${IMAGE_REPO_NAME}:latest"
       # mark success for post_build
-      - echo "OK" > /tmp/build.ok
 
   post_build:
     commands:
-      - set -euo pipefail
-      # only proceed if build.ok exists
-      - test -f /tmp/build.ok || { echo "Build did not complete; skipping push"; exit 1; }
-      - echo "Pushing images…"
       - docker push "${ECR_URI}/${IMAGE_REPO_NAME}:${IMAGE_TAG}"
       - docker push "${ECR_URI}/${IMAGE_REPO_NAME}:latest"
-      - echo "Preparing deploy artifacts…"
       - mkdir -p deploy
-      - echo "${IMAGE_TAG}" > deploy/image_tag.txt
-      - echo "Uploading image tag to S3…"
       - aws s3 cp deploy/image_tag.txt "s3://${IMAGE_TAG_S3_BUCKET}/latest.txt" --region "${REGION}" --sse AES256 --cache-control no-store
-      - echo "Resolving image digest…"
       - DIGEST=$(aws ecr describe-images --repository-name "${IMAGE_REPO_NAME}" --image-ids imageTag="${IMAGE_TAG}" --region "${REGION}" --query 'imageDetails[0].imageDigest' --output text)
-      - echo "${DIGEST}" > deploy/image_digest.txt
       - printf '{"image":"%s","tag":"%s","digest":"%s","ecr_uri":"%s"}\n' "${IMAGE_REPO_NAME}" "${IMAGE_TAG}" "${DIGEST}" "${ECR_URI}" > deploy/image_detail.json
 
 artifacts:
